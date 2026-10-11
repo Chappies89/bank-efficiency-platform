@@ -6,9 +6,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import pytest
-
-import pytest
 
 
 def pytest_collection_modifyitems(config, items):
