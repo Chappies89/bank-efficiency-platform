@@ -29,7 +29,20 @@ jobs:
         run: mypy src/
 
       - name: Run unit tests
-        run: pytest tests/unit/ -m unit -v --cov=src --cov-report=term-missing
+        run: |
+          pytest tests/unit/ -m unit -v \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=85
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
 
   stage-2-integration:
     name: "Stage 2: Integration Tests"
