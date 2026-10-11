@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -15,7 +17,7 @@ class ModelPredictor:
         self,
         model: TrainedModel,
         features: pd.DataFrame,
-    ) -> np.ndarray:
+    ) -> np.ndarray[Any, np.dtype[np.float64]]:
         """Return raw predictions from the underlying estimator."""
         if model.feature_names:
             missing = set(model.feature_names) - set(features.columns)
@@ -25,4 +27,5 @@ class ModelPredictor:
                 )
             features = features[model.feature_names]
 
-        return model.model.predict(features)
+        raw = model.model.predict(features)
+        return np.asarray(raw, dtype=np.float64)
