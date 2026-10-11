@@ -1,1 +1,46 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bank-efficiency-postgres
+    environment:
+      POSTGRES_USER: bankuser
+      POSTGRES_PASSWORD: bankpass
+      POSTGRES_DB: bank_efficiency
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bankuser -d bank_efficiency"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: bank-efficiency-mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    volumes:
+      - mlflow_data:/mlflow
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bank-efficiency-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  mlflow_data:
