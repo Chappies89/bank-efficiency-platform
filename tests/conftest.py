@@ -6,6 +6,34 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import pytest
+
+import pytest
+
+
+def pytest_collection_modifyitems(config, items):
+    """Automatically apply markers based on test folder location.
+
+    This maps folders to markers so that CI commands like
+    `pytest tests/unit/ -m unit` work without requiring manual markers.
+    """
+    import pathlib
+
+    folder_to_marker = {
+        "unit": "unit",
+        "integration": "integration",
+        "e2e": "e2e",
+        "performance": "performance",
+        "business": "business",
+        "smoke": "smoke",
+    }
+
+    for item in items:
+        item_path = pathlib.Path(str(item.fspath))
+        for folder, marker_name in folder_to_marker.items():
+            if folder in item_path.parts:
+                item.add_marker(getattr(pytest.mark, marker_name))
+                break
 
 
 @pytest.fixture(scope="session")
