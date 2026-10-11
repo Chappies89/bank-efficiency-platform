@@ -46,3 +46,7 @@ pre-commit==3.6.0
 
 python-dateutil==2.8.2
 types-python-dateutil==2.9.0.20260807
+
+xgboost==2.0.3
+mlflow==2.10.0
+shap==0.44.1
