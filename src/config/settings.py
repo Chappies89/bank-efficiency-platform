@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://bankuser:bankpass@localhost:5432/bank_efficiency"
     mlflow_tracking_uri: str = "http://localhost:5000"
-    api_host: str = "0.0.0.0"
+    api_host: str = "127.0.0.1"
     api_port: int = 8000
     environment: str = "development"
 
