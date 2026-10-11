@@ -26,6 +26,9 @@ from scipy.optimize import linprog
 
 from src.domain.value_objects.efficiency_score import EfficiencyScore
 
+# Type alias for a 2D float64 matrix — used throughout the DEA LP.
+FloatMatrix = np.ndarray[tuple[int, int], np.dtype[np.float64]]
+
 
 class DEAService:
     """Computes DEA efficiency scores using linear programming."""
@@ -70,7 +73,12 @@ class DEAService:
             scores.append(EfficiencyScore(theta))
         return scores
 
-    def _solve_lp(self, X: np.ndarray, Y: np.ndarray, i: int) -> float:
+    def _solve_lp(
+        self,
+        X: FloatMatrix,
+        Y: FloatMatrix,
+        i: int,
+    ) -> float:
         """Solve the CCR DEA linear program for DMU i.
 
         Input-oriented formulation:
