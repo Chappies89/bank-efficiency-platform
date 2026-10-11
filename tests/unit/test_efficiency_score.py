@@ -48,3 +48,22 @@ class TestEfficiencyScore:
     def test_efficiency_score_inequality(self):
         """Two scores with different values must not be equal."""
         assert EfficiencyScore(0.5) != EfficiencyScore(0.6)
+
+    def test_efficiency_score_rejects_non_numeric_input(self):
+        """Non-numeric values must raise ValueError."""
+        with pytest.raises(ValueError, match="must be numeric"):
+            EfficiencyScore("0.5")
+
+    def test_is_efficient_returns_true_when_value_is_1(self):
+        """is_efficient() returns True only when value is exactly 1.0."""
+        assert EfficiencyScore(1.0).is_efficient() is True
+        assert EfficiencyScore(0.99).is_efficient() is False
+
+    def test_is_inefficient_returns_true_when_value_below_1(self):
+        """is_inefficient() returns True when value < 1.0."""
+        assert EfficiencyScore(0.5).is_inefficient() is True
+        assert EfficiencyScore(1.0).is_inefficient() is False
+
+    def test_repr_returns_readable_format(self):
+        """__repr__ should return a readable string showing the field name."""
+        assert repr(EfficiencyScore(0.75)) == "EfficiencyScore(value=0.75)"
