@@ -9,12 +9,12 @@ on:
 jobs:
   stage-1-development:
     name: "Stage 1: Development (Unit Tests + Lint)"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -33,7 +33,7 @@ jobs:
 
   stage-2-integration:
     name: "Stage 2: Integration Tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: stage-1-development
 
     services:
@@ -52,8 +52,8 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -68,7 +68,7 @@ jobs:
 
   stage-3-system:
     name: "Stage 3: System Verification (E2E + Security)"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: stage-2-integration
 
     services:
@@ -87,8 +87,8 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -108,7 +108,7 @@ jobs:
 
   stage-4-business:
     name: "Stage 4: Business Verification"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: stage-3-system
 
     services:
@@ -127,8 +127,8 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -143,7 +143,7 @@ jobs:
 
   stage-5-smoke:
     name: "Stage 5: Production Release (Smoke Tests)"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: stage-4-business
 
     services:
@@ -162,8 +162,8 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
