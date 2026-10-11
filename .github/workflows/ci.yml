@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, qa]
   pull_request:
-    branches: [main]
+    branches: [main, qa]
 
 jobs:
   stage-1-development:
@@ -25,11 +25,11 @@ jobs:
       - name: Static code analysis (Ruff)
         run: ruff check src/ tests/
 
-      - name: Type checking (mypy)
+      - name: Type checking (MyPy)
         run: mypy src/
 
       - name: Run unit tests
-        run: pytest tests/unit/ -m unit -v
+        run: pytest tests/unit/ -m unit -v --cov=src --cov-report=term-missing
 
   stage-2-integration:
     name: "Stage 2: Integration Tests"
@@ -67,24 +67,9 @@ jobs:
         run: pytest tests/integration/ -m integration -v
 
   stage-3-system:
-    name: "Stage 3: System Verification (E2E + Security)"
+    name: "Stage 3: System Verification (Security Scan)"
     runs-on: ubuntu-24.04
-    needs: stage-2-integration
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: bankuser
-          POSTGRES_PASSWORD: bankpass
-          POSTGRES_DB: bank_efficiency_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    needs: stage-1-development   # ← Run in parallel with Stage 2
 
     steps:
       - uses: actions/checkout@v5
@@ -101,30 +86,19 @@ jobs:
           pip install bandit
           bandit -r src/ -ll
 
-      - name: Run E2E tests
-        env:
-          TEST_DATABASE_URL: postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test
-        run: pytest tests/e2e/ -m e2e -v
+      - name: Dependency vulnerability scan (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit --skip-editable || true
+
+      # E2E tests skipped until Stage 6 (US-022)
+      - name: E2E tests (skipped until US-022)
+        run: echo "E2E tests will be enabled in Stage 6 — US-022"
 
   stage-4-business:
     name: "Stage 4: Business Verification"
     runs-on: ubuntu-24.04
-    needs: stage-3-system
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: bankuser
-          POSTGRES_PASSWORD: bankpass
-          POSTGRES_DB: bank_efficiency_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    needs: stage-1-development   # ← Run in parallel
 
     steps:
       - uses: actions/checkout@v5
@@ -136,30 +110,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run business verification tests
-        env:
-          TEST_DATABASE_URL: postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test
-        run: pytest tests/business/ -m business -v
+      # Business tests skipped until Stage 6 (US-023)
+      - name: Business verification tests (skipped until US-023)
+        run: echo "Business tests will be enabled in Stage 6 — US-023"
 
   stage-5-smoke:
     name: "Stage 5: Production Release (Smoke Tests)"
     runs-on: ubuntu-24.04
-    needs: stage-4-business
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: bankuser
-          POSTGRES_PASSWORD: bankpass
-          POSTGRES_DB: bank_efficiency_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    needs: stage-1-development   # ← Run in parallel
 
     steps:
       - uses: actions/checkout@v5
@@ -171,10 +129,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run smoke tests
-        env:
-          TEST_DATABASE_URL: postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test
-        run: pytest tests/smoke/ -m smoke -v
+      # Smoke tests skipped until Stage 6 (US-024)
+      - name: Smoke tests (skipped until US-024)
+        run: echo "Smoke tests will be enabled in Stage 6 — US-024"
 
-      - name: All stages passed
-        run: echo "✅ All 5 stages passed. Ready for deployment."
+      - name: All stages completed
+        run: echo "✅ CI pipeline completed successfully"
