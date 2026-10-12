@@ -11,7 +11,7 @@ pythonpath = ["."]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --strict-markers --cov=src --cov-report=term-missing"
+addopts = "-v --strict-markers"
 markers = [
     "unit: Unit tests (Stage 1: Development)",
     "integration: Integration tests (Stage 2: Integration)",
