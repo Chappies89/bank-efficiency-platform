@@ -1,59 +1,80 @@
-"""Streamlit dashboard home page."""
+"""Data loading and formatting for the dashboard."""
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
+import os
+from typing import Any
 
-# Add project root to sys.path so 'src' package is importable
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+import pandas as pd
+from sqlalchemy import Engine, create_engine, select
+from sqlalchemy.orm import Session
 
-import streamlit as st  # noqa: E402
-
-from src.presentation.dashboard.data import (  # noqa: E402
-    load_branches_with_efficiency,
+from src.config.settings import settings
+from src.infrastructure.database.models import (
+    BranchModel,
+    DEAResultModel,
 )
 
-st.set_page_config(
-    page_title="Bank Efficiency Platform",
-    page_icon="🏦",
-    layout="wide",
-)
 
-st.title("🏦 Bank Efficiency Platform")
-st.markdown("**DEA-ML hybrid platform for measuring and predicting bank branch efficiency.**")
+def get_engine() -> Engine:
+    """Get the database engine, preferring TEST_DATABASE_URL in tests."""
+    db_url = os.getenv("TEST_DATABASE_URL", settings.database_url)
+    return create_engine(db_url)
 
-st.divider()
 
-with st.spinner("Loading data..."):
-    df = load_branches_with_efficiency()
+def load_branches() -> pd.DataFrame:
+    """Load all branches as a DataFrame."""
+    engine = get_engine()
+    with Session(engine) as session:
+        stmt = select(BranchModel).order_by(BranchModel.branch_id)
+        rows = session.execute(stmt).scalars().all()
+        return pd.DataFrame(
+            [
+                {
+                    "branch_id": r.branch_id,
+                    "branch_name": r.branch_name,
+                    "region": r.region,
+                    "opened_date": r.opened_date,
+                    "square_meters": r.square_meters,
+                }
+                for r in rows
+            ]
+        )
 
-if df.empty:
-    st.warning("No data available. Run `python scripts/seed_database.py` to populate the database.")
-else:
-    total_branches = len(df)
-    scored = df["efficiency_score"].notna().sum()
-    efficient = (df["efficiency_score"] == 1.0).sum() if scored > 0 else 0
-    avg_eff = df["efficiency_score"].mean() if scored > 0 else 0.0
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Branches", f"{total_branches}")
-    col2.metric("Scored Branches", f"{scored}")
-    col3.metric("Efficient (1.0)", f"{efficient}")
-    col4.metric("Average Efficiency", f"{avg_eff:.2%}" if scored > 0 else "—")
+def load_latest_efficiency() -> pd.DataFrame:
+    """Load the latest efficiency score for each branch."""
+    engine = get_engine()
+    with Session(engine) as session:
+        stmt = select(DEAResultModel).order_by(
+            DEAResultModel.branch_id,
+            DEAResultModel.observation_date.desc(),
+        )
+        rows = session.execute(stmt).scalars().all()
 
-    st.divider()
+        seen: set[int] = set()
+        latest: list[dict[str, Any]] = []
+        for r in rows:
+            if r.branch_id in seen:
+                continue
+            seen.add(r.branch_id)
+            latest.append(
+                {
+                    "branch_id": r.branch_id,
+                    "observation_date": r.observation_date,
+                    "efficiency_score": r.efficiency_score,
+                }
+            )
+        return pd.DataFrame(latest)
 
-    st.subheader("Quick Guide")
-    st.markdown(
-        """
-        **Available Pages** (use the sidebar):
 
-        - **📊 Branch Overview** — Table of all branches with latest efficiency scores
-        - **🔮 Predict Efficiency** — Interactive "what-if" prediction form
-
-        **Data Source:** PostgreSQL (`branches`, `branch_observations`, `dea_results`)
-        """
-    )
+def load_branches_with_efficiency() -> pd.DataFrame:
+    """Combine branch info with latest efficiency score."""
+    branches = load_branches()
+    efficiency = load_latest_efficiency()
+    if efficiency.empty:
+        branches["efficiency_score"] = None
+        branches["observation_date"] = None
+        return branches
+    merged = branches.merge(efficiency, on="branch_id", how="left")
+    return merged
