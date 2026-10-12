@@ -15,9 +15,7 @@ import streamlit as st  # noqa: E402
 st.set_page_config(page_title="Predict Efficiency", page_icon="🔮", layout="wide")
 
 st.title("🔮 Predict Branch Efficiency")
-st.markdown(
-    "Enter branch KPIs to predict the efficiency score using the ML model."
-)
+st.markdown("Enter branch KPIs to predict the efficiency score using the ML model.")
 
 st.divider()
 
@@ -95,7 +93,4 @@ if submitted:
 
     except httpx.HTTPError as e:
         st.error(f"API request failed: {e}")
-        st.info(
-            "Make sure the API is running: "
-            "`uvicorn src.presentation.api.main:app`"
-        )
+        st.info("Make sure the API is running: " "`uvicorn src.presentation.api.main:app`")

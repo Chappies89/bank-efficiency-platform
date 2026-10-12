@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-from datetime import date
+from typing import Any
 
 import pandas as pd
-from sqlalchemy import create_engine, select
+from sqlalchemy import Engine, create_engine, select
 from sqlalchemy.orm import Session
 
 from src.config.settings import settings
 from src.infrastructure.database.models import (
     BranchModel,
-    BranchObservationModel,
     DEAResultModel,
 )
 
 
-def get_engine():
+def get_engine() -> Engine:
     """Get the database engine."""
     return create_engine(settings.database_url)
 
@@ -51,9 +50,8 @@ def load_latest_efficiency() -> pd.DataFrame:
         )
         rows = session.execute(stmt).scalars().all()
 
-        # Keep only the most recent score per branch
         seen: set[int] = set()
-        latest: list[dict] = []
+        latest: list[dict[str, Any]] = []
         for r in rows:
             if r.branch_id in seen:
                 continue

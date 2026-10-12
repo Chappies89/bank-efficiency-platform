@@ -2,19 +2,19 @@
 
 from __future__ import annotations
 
-import streamlit as st
-
 import sys
 from pathlib import Path
 
+# Add project root to sys.path so 'src' package is importable
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st  # noqa: E402
 
-
-from src.presentation.dashboard.data import load_branches_with_efficiency
+from src.presentation.dashboard.data import (  # noqa: E402
+    load_branches_with_efficiency,
+)
 
 st.set_page_config(
     page_title="Bank Efficiency Platform",
@@ -23,22 +23,16 @@ st.set_page_config(
 )
 
 st.title("🏦 Bank Efficiency Platform")
-st.markdown(
-    "**DEA-ML hybrid platform for measuring and predicting bank branch efficiency.**"
-)
+st.markdown("**DEA-ML hybrid platform for measuring and predicting bank branch efficiency.**")
 
 st.divider()
 
-# Load data
 with st.spinner("Loading data..."):
     df = load_branches_with_efficiency()
 
 if df.empty:
-    st.warning(
-        "No data available. Run `python scripts/seed_database.py` to populate the database."
-    )
+    st.warning("No data available. Run `python scripts/seed_database.py` to populate the database.")
 else:
-    # KPI cards
     total_branches = len(df)
     scored = df["efficiency_score"].notna().sum()
     efficient = (df["efficiency_score"] == 1.0).sum() if scored > 0 else 0

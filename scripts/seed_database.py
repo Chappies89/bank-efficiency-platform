@@ -46,9 +46,7 @@ def main() -> None:
     print(f"      ✓ Saved {len(branches)} branches")
 
     print("\n[3/4] Generating 12 months of observations per branch...")
-    observations = generate_observations(
-        branches, start_date=date(2025, 1, 1), months=12, seed=42
-    )
+    observations = generate_observations(branches, start_date=date(2025, 1, 1), months=12, seed=42)
     for o in observations:
         repo.save_observation(o)
     session.commit()
@@ -64,7 +62,7 @@ def main() -> None:
     scores = dea_service.calculate_efficiency(inputs, outputs)
 
     dea_repo = PostgresDEARepository(session)
-    for obs, score in zip(latest_obs, scores):
+    for obs, score in zip(latest_obs, scores, strict=False):
         dea_repo.save_score(obs.branch_id, score, latest_date)
     session.commit()
 
