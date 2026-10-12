@@ -1,21 +1,16 @@
 """Shared pytest fixtures for all test stages."""
 import os
+import pathlib
 
-import pandas as pd
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 
 def pytest_collection_modifyitems(config, items):
     """Automatically apply markers based on test folder location.
 
-    This maps folders to markers so that CI commands like
-    `pytest tests/unit/ -m unit` work without requiring manual markers.
+    Maps folders to markers so that CI commands like
+    `pytest tests/unit/ -m unit` work without manual tagging.
     """
-    import pathlib
-
     folder_to_marker = {
         "unit": "unit",
         "integration": "integration",
@@ -33,17 +28,24 @@ def pytest_collection_modifyitems(config, items):
                 break
 
 
+# ---------------------------------------------------------------------------
+# Database fixtures (lazy imports so unit tests don't pull DB modules)
+# ---------------------------------------------------------------------------
+
 @pytest.fixture(scope="session")
 def test_database_url():
     """Test database URL."""
     return os.getenv(
-        "TEST_DATABASE_URL", "postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test"
+        "TEST_DATABASE_URL",
+        "postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test",
     )
 
 
 @pytest.fixture(scope="session")
 def db_engine(test_database_url):
     """Create a test database engine."""
+    from sqlalchemy import create_engine
+
     engine = create_engine(test_database_url)
     yield engine
     engine.dispose()
@@ -52,6 +54,8 @@ def db_engine(test_database_url):
 @pytest.fixture
 def db_session(db_engine):
     """Provide a transactional database session for each test."""
+    from sqlalchemy.orm import sessionmaker
+
     session_factory = sessionmaker(bind=db_engine)
     session = session_factory()
     try:
@@ -64,6 +68,8 @@ def db_session(db_engine):
 @pytest.fixture
 def client():
     """FastAPI test client."""
+    from fastapi.testclient import TestClient
+
     from src.presentation.api.main import app
 
     return TestClient(app)
@@ -72,6 +78,8 @@ def client():
 @pytest.fixture
 def synthetic_dataframe():
     """Sample synthetic branch data for tests."""
+    import pandas as pd
+
     return pd.DataFrame(
         {
             "branch_id": [1, 2, 3, 4, 5],
