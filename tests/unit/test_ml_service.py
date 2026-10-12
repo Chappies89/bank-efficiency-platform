@@ -56,23 +56,17 @@ class TestMLServiceTraining:
         assert isinstance(model.metrics["rmse"], float)
         assert isinstance(model.metrics["r2"], float)
 
-    def test_train_raises_on_empty_features(
-        self, sample_targets: pd.Series
-    ) -> None:
+    def test_train_raises_on_empty_features(self, sample_targets: pd.Series) -> None:
         service = MLService()
         with pytest.raises(ValueError, match="cannot be empty"):
             service.train(pd.DataFrame(), sample_targets)
 
-    def test_train_raises_on_empty_targets(
-        self, sample_features: pd.DataFrame
-    ) -> None:
+    def test_train_raises_on_empty_targets(self, sample_features: pd.DataFrame) -> None:
         service = MLService()
         with pytest.raises(ValueError, match="cannot be empty"):
             service.train(sample_features, pd.Series(dtype=float))
 
-    def test_train_raises_on_shape_mismatch(
-        self, sample_features: pd.DataFrame
-    ) -> None:
+    def test_train_raises_on_shape_mismatch(self, sample_features: pd.DataFrame) -> None:
         service = MLService()
         mismatched = pd.Series(np.random.uniform(0.5, 1.0, size=30))
         with pytest.raises(ValueError, match="must match"):

@@ -32,6 +32,7 @@ def pytest_collection_modifyitems(config, items):
 # Database fixtures (lazy imports so unit tests don't pull DB modules)
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="session")
 def test_database_url():
     """Test database URL."""

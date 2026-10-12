@@ -22,9 +22,7 @@ class ModelPredictor:
         if model.feature_names:
             missing = set(model.feature_names) - set(features.columns)
             if missing:
-                raise ValueError(
-                    f"Features missing required columns: {sorted(missing)}"
-                )
+                raise ValueError(f"Features missing required columns: {sorted(missing)}")
             features = features[model.feature_names]
 
         raw = model.model.predict(features)

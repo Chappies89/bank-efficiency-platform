@@ -90,7 +90,5 @@ class XGBoostTrainer:
                 mlflow.xgboost.log_model(model, artifact_path="model")
                 return str(run.info.run_id)
         except Exception as exc:  # noqa: BLE001
-            logger.warning(
-                "MLflow logging skipped (%s). Training still completed.", exc
-            )
+            logger.warning("MLflow logging skipped (%s). Training still completed.", exc)
             return ""

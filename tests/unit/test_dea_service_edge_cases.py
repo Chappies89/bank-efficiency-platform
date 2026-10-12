@@ -15,9 +15,7 @@ class TestDEAServiceLpFailure:
         inputs = [[10.0], [20.0]]
         outputs = [[100.0], [200.0]]
 
-        with patch(
-            "src.application.services.dea_service.linprog"
-        ) as mock_linprog:
+        with patch("src.application.services.dea_service.linprog") as mock_linprog:
             mock_result = type(
                 "Result",
                 (),
@@ -37,9 +35,7 @@ class TestDEAServiceClamping:
         inputs = [[10.0], [20.0]]
         outputs = [[100.0], [200.0]]
 
-        with patch(
-            "src.application.services.dea_service.linprog"
-        ) as mock_linprog:
+        with patch("src.application.services.dea_service.linprog") as mock_linprog:
             mock_result = type(
                 "Result",
                 (),
@@ -59,9 +55,7 @@ class TestDEAServiceClamping:
         inputs = [[10.0], [20.0]]
         outputs = [[100.0], [200.0]]
 
-        with patch(
-            "src.application.services.dea_service.linprog"
-        ) as mock_linprog:
+        with patch("src.application.services.dea_service.linprog") as mock_linprog:
             mock_result = type(
                 "Result",
                 (),
