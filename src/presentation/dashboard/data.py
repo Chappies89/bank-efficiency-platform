@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import pandas as pd
@@ -16,8 +17,9 @@ from src.infrastructure.database.models import (
 
 
 def get_engine() -> Engine:
-    """Get the database engine."""
-    return create_engine(settings.database_url)
+    """Get the database engine, preferring TEST_DATABASE_URL in tests."""
+    db_url = os.getenv("TEST_DATABASE_URL", settings.database_url)
+    return create_engine(db_url)
 
 
 def load_branches() -> pd.DataFrame:
