@@ -98,7 +98,4 @@ class MLService:
         predictor = ModelPredictor()
         raw_predictions = predictor.predict(model, features)
 
-        return [
-            EfficiencyScore(float(np.clip(p, 0.0, 1.0)))
-            for p in raw_predictions
-        ]
+        return [EfficiencyScore(float(np.clip(p, 0.0, 1.0))) for p in raw_predictions]
