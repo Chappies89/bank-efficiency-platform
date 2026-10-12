@@ -33,16 +33,14 @@ python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 
+# Coverage defaults — overridden per-stage by coverage-*.ini files
 [tool.coverage.run]
 branch = true
 omit = [
     "*/tests/*",
     "*/__init__.py",
     "*/migrations/*",
-    "*/infrastructure/database/*",
-    "*/application/interfaces/*",
 ]
-parallel = false
 
 [tool.coverage.report]
 exclude_lines = [
@@ -53,5 +51,5 @@ exclude_lines = [
     "\\.\\.\\.",
     "except Exception",
 ]
-fail_under = 85
 show_missing = true
+# No fail_under here — set per-stage via coverage-*.ini
