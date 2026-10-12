@@ -1,3 +1,20 @@
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers --cov=src/infrastructure/database --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "performance: Performance tests",
+    "business: Business verification tests",
+    "smoke: Smoke tests",
+]
+
 [tool.coverage.run]
 source = ["src/infrastructure/database"]
 branch = true
