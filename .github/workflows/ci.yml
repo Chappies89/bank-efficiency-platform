@@ -29,9 +29,14 @@ jobs:
         run: mypy src/
 
       - name: Run unit tests
+        env:
+          COVERAGE_RCFILE: coverage-unit.ini
         run: |
           pytest tests/unit/ -m unit -v \
-            -c coverage-unit.toml
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=85
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -74,9 +79,13 @@ jobs:
       - name: Run integration tests
         env:
           TEST_DATABASE_URL: postgresql://bankuser:bankpass@localhost:5432/bank_efficiency_test
+          COVERAGE_RCFILE: coverage-integration.ini
         run: |
           pytest tests/integration/ -m integration -v \
-            -c coverage-integration.toml
+            --cov=src/infrastructure/database \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=80
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
