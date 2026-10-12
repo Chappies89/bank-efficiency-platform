@@ -221,3 +221,7 @@ __marimo__/
 
 # Local git history tools
 mailmap.txt
+
+# MLflow local tracking
+mlruns/
+mlflow.db

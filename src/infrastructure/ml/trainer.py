@@ -1,7 +1,13 @@
-"""XGBoost trainer with MLflow experiment tracking."""
+"""XGBoost trainer with MLflow experiment tracking.
+
+MLflow tracking is optional:
+- If the tracking server is reachable, runs are logged remotely.
+- If it isn't, training still completes and a warning is logged.
+"""
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import mlflow
@@ -13,9 +19,11 @@ from xgboost import XGBRegressor
 
 from src.application.services.ml_service import TrainedModel
 
+logger = logging.getLogger(__name__)
+
 
 class XGBoostTrainer:
-    """Trains XGBoost regressors and logs them to MLflow."""
+    """Trains XGBoost regressors and logs them to MLflow (best-effort)."""
 
     def __init__(
         self,
@@ -30,10 +38,7 @@ class XGBoostTrainer:
         features: pd.DataFrame,
         targets: pd.Series,
     ) -> TrainedModel:
-        """Train an XGBoost regressor and log the run to MLflow."""
-        mlflow.set_tracking_uri(self._tracking_uri)
-        mlflow.set_experiment(self._experiment_name)
-
+        """Train an XGBoost regressor and optionally log the run to MLflow."""
         params: dict[str, Any] = {
             "n_estimators": 100,
             "max_depth": 4,
@@ -42,23 +47,39 @@ class XGBoostTrainer:
             "random_state": 42,
         }
 
-        with mlflow.start_run() as run:
-            mlflow.log_params(params)
+        model = XGBRegressor(**params)
+        model.fit(features, targets)
 
-            model = XGBRegressor(**params)
-            model.fit(features, targets)
+        predictions = model.predict(features)
+        rmse = float(np.sqrt(mean_squared_error(targets, predictions)))
+        r2 = float(r2_score(targets, predictions))
 
-            predictions = model.predict(features)
-            rmse = float(np.sqrt(mean_squared_error(targets, predictions)))
-            r2 = float(r2_score(targets, predictions))
+        run_id = self._log_to_mlflow_best_effort(model, params, rmse, r2)
 
-            mlflow.log_metric("rmse", rmse)
-            mlflow.log_metric("r2", r2)
-            mlflow.xgboost.log_model(model, artifact_path="model")
+        return TrainedModel(
+            model=model,
+            metrics={"rmse": rmse, "r2": r2},
+            run_id=run_id,
+            feature_names=list(features.columns),
+        )
 
-            return TrainedModel(
-                model=model,
-                metrics={"rmse": rmse, "r2": r2},
-                run_id=run.info.run_id,
-                feature_names=list(features.columns),
-            )
+    def _log_to_mlflow_best_effort(
+        self,
+        model: XGBRegressor,
+        params: dict[str, Any],
+        rmse: float,
+        r2: float,
+    ) -> str:
+        """Try to log to MLflow. If it fails, return an empty run_id."""
+        try:
+            mlflow.set_tracking_uri(self._tracking_uri)
+            mlflow.set_experiment(self._experiment_name)
+            with mlflow.start_run() as run:
+                mlflow.log_params(params)
+                mlflow.log_metric("rmse", rmse)
+                mlflow.log_metric("r2", r2)
+                mlflow.xgboost.log_model(model, artifact_path="model")
+                return str(run.info.run_id)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("MLflow logging skipped (%s). Training still completed.", exc)
+            return ""

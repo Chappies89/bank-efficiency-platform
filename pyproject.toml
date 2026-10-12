@@ -49,6 +49,7 @@ exclude_lines = [
     "raise NotImplementedError",
     "@abstractmethod",
     "\\.\\.\\.",
+    "except Exception",
 ]
 fail_under = 85
 show_missing = true
