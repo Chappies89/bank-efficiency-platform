@@ -26,6 +26,14 @@ class EfficiencyResponse(BaseModel):
     is_efficient: bool
 
 
+class FeatureContribution(BaseModel):
+    """A single feature's contribution to a prediction."""
+
+    feature: str
+    contribution: float
+    value: float
+
+
 class PredictionRequest(BaseModel):
     """Input features for a prediction."""
 
@@ -35,12 +43,13 @@ class PredictionRequest(BaseModel):
 
 
 class PredictionResponse(BaseModel):
-    """A predicted efficiency score."""
+    """A predicted efficiency score with SHAP explanation."""
 
     model_config = {"protected_namespaces": ()}
 
     predicted_efficiency: float = Field(ge=0.0, le=1.0)
     model_run_id: str
+    top_drivers: list[FeatureContribution] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):

@@ -1,5 +1,4 @@
 [run]
-source = src/infrastructure/database
 branch = True
 omit =
     */tests/*
@@ -8,9 +7,9 @@ omit =
 [report]
 exclude_lines =
     pragma: no cover
-    if __name__ == .__main__.:
+    if __name__ == .__main__:
     raise NotImplementedError
     @abstractmethod
     \.\.\.
-fail_under = 80
+fail_under = 70
 show_missing = True

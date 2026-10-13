@@ -99,3 +99,21 @@ class TestMLServicePrediction:
         model = service.train(sample_features, sample_targets)
         with pytest.raises(ValueError, match="cannot be empty"):
             service.predict(model, pd.DataFrame())
+
+
+class TestMLServiceExplain:
+    def test_explain_returns_feature_contributions(
+        self, sample_features: pd.DataFrame, sample_targets: pd.Series
+    ) -> None:
+        from src.application.services.shap_service import FeatureContribution
+
+        service = MLService()
+        model = service.train(sample_features, sample_targets)
+
+        from src.application.services.shap_service import ShapService
+
+        single_row = sample_features.head(1)
+        result = ShapService().explain(model, single_row)
+
+        assert len(result) > 0
+        assert all(isinstance(c, FeatureContribution) for c in result)
