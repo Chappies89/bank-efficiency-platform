@@ -1,4 +1,4 @@
-﻿"""Prediction endpoint with SHAP explanations."""
+"""Prediction endpoint with SHAP explanations."""
 
 from __future__ import annotations
 
