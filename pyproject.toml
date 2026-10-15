@@ -34,6 +34,12 @@ python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+
 # Coverage defaults — overridden per-stage by coverage-*.ini files
 [tool.coverage.run]
 branch = true

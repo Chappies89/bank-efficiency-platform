@@ -33,7 +33,7 @@ class TestBranchObservation:
 
     def test_observation_is_immutable(self):
         with pytest.raises(AttributeError):
-            self.obs.fte_count = 999  # type: ignore[misc]
+            self.obs.fte_count = 999
 
     def test_observation_has_date(self):
         assert self.obs.observation_date == date(2026, 6, 30)

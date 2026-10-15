@@ -19,7 +19,10 @@ router = APIRouter(prefix="/api", tags=["predictions"])
 
 
 def _get_placeholder_model() -> TrainedModel:
-    """Build a tiny inline XGBoost model for demo predictions."""
+    """Build a tiny inline XGBoost model for demo predictions.
+
+    In production, this would load a persisted model from MLflow by run_id.
+    """
     rng = np.random.default_rng(42)
     features = pd.DataFrame(
         {
