@@ -18,7 +18,7 @@ class TestBranch:
 
     def test_branch_is_immutable(self):
         with pytest.raises(AttributeError):
-            self.branch.branch_name = "Rosebank"  # type: ignore[misc]
+            self.branch.branch_name = "Rosebank"
 
     def test_branch_equality_by_attributes(self):
         b2 = Branch(1, "Sandton", "Gauteng", date(2010, 3, 1), 1200)
