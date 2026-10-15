@@ -1,9 +1,13 @@
 """Integration tests against a real PostgreSQL database."""
+from __future__ import annotations
+
+import os
+from collections.abc import Generator
 from datetime import date
 
 import pytest
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.orm import Session, sessionmaker
 
 from src.domain.entities.branch import Branch
 from src.domain.entities.branch_observation import BranchObservation
@@ -16,9 +20,8 @@ from src.infrastructure.database.repositories import (
 
 
 @pytest.fixture(scope="module")
-def engine():
-    import os
-
+def engine() -> Generator[Engine, None, None]:
+    """Create a test database engine."""
     db_url = os.getenv(
         "TEST_DATABASE_URL",
         "postgresql://bankuser:bankpass@localhost:5432/bank_efficiency",
@@ -32,7 +35,8 @@ def engine():
 
 
 @pytest.fixture
-def session(engine):
+def session(engine: Engine) -> Generator[Session, None, None]:
+    """Provide a transactional database session."""
     session_factory = sessionmaker(bind=engine)
     s = session_factory()
     yield s
@@ -42,7 +46,7 @@ def session(engine):
 
 @pytest.mark.integration
 class TestPostgresBranchRepository:
-    def test_save_and_retrieve_branch(self, session):
+    def test_save_and_retrieve_branch(self, session: Session) -> None:
         repo = PostgresBranchRepository(session)
         repo.save_branch(Branch(1001, "Sandton", "Gauteng", date(2010, 3, 1), 1200))
         session.commit()
@@ -51,7 +55,7 @@ class TestPostgresBranchRepository:
         ).scalar_one()
         assert row == "Sandton"
 
-    def test_save_and_retrieve_observation(self, session):
+    def test_save_and_retrieve_observation(self, session: Session) -> None:
         repo = PostgresBranchRepository(session)
         repo.save_branch(Branch(1002, "Rosebank", "Gauteng", date(2015, 6, 1), 800))
         session.commit()
@@ -74,7 +78,7 @@ class TestPostgresBranchRepository:
 
 @pytest.mark.integration
 class TestPostgresDEARepository:
-    def test_save_and_retrieve_score(self, session):
+    def test_save_and_retrieve_score(self, session: Session) -> None:
         branch_repo = PostgresBranchRepository(session)
         branch_repo.save_branch(Branch(1003, "Menlyn", "Gauteng", date(2018, 6, 1), 900))
         session.commit()
